@@ -10,7 +10,17 @@ class ArticleController extends Controller
 {
     public function index()
     {
-        $articles = Article::with('user')->latest()->get();
+        $user = auth()->user();
+
+        if ($user->role === 'moderator') {
+            $articles = Article::with('user')->latest()->get();
+        } else {
+            $articles = Article::with('user')
+                ->where('user_id', $user->id)
+                ->latest()
+                ->get();
+        }
+
         return view('articles.index', compact('articles'));
     }
 
@@ -25,7 +35,7 @@ class ArticleController extends Controller
         Gate::authorize('create', Article::class);
 
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
+            'title'   => 'required|string|max:255',
             'content' => 'required|string',
         ]);
 
@@ -36,6 +46,7 @@ class ArticleController extends Controller
 
     public function show(Article $article)
     {
+        Gate::authorize('view', $article);
         return view('articles.show', compact('article'));
     }
 
@@ -50,7 +61,7 @@ class ArticleController extends Controller
         Gate::authorize('update', $article);
 
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
+            'title'   => 'required|string|max:255',
             'content' => 'required|string',
         ]);
 
@@ -63,6 +74,7 @@ class ArticleController extends Controller
     {
         Gate::authorize('delete', $article);
         $article->delete();
+
         return redirect()->route('articles.index')->with('success', 'Article deleted!');
     }
 }

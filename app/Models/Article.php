@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Article extends Model
 {
-    // Разрешаем массовое заполнение этих полей
-    protected $fillable = ['user_id', 'title', 'content'];
+    use HasFactory;
 
-    // Связь: статья принадлежит одному пользователю
+    protected $fillable = ['title', 'content', 'user_id'];
+
     public function user()
     {
         return $this->belongsTo(User::class);
